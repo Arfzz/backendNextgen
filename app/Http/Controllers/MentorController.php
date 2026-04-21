@@ -25,15 +25,6 @@ class MentorController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $paketBeasiswas = \App\Models\PaketBeasiswa::all();
-        return view('mentor.create', compact('paketBeasiswas'));
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -41,32 +32,13 @@ class MentorController extends Controller
         $validated = $request->validate([
             'nama_mentor' => 'required|string|max:255',
             'pendidikan'  => 'required|string|max:255',
-            'awardee'     => 'required|string|max:255',
-            'rating'      => 'required|numeric|min:0|max:5',
+            'awardee'     => 'required|array|min:1',
+            'awardee.*'   => 'required|string|max:255',
         ]);
 
         Mentor::create($validated);
 
         return redirect()->route('mentor.index')->with('success', 'Data Mentor berhasil ditambahkan!');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        $mentor = Mentor::findOrFail($id);
-        return view('mentor.show', compact('mentor'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        $mentor = Mentor::findOrFail($id);
-        $paketBeasiswas = \App\Models\PaketBeasiswa::all();
-        return view('mentor.edit', compact('mentor', 'paketBeasiswas'));
     }
 
     /**
@@ -79,8 +51,8 @@ class MentorController extends Controller
         $validated = $request->validate([
             'nama_mentor' => 'required|string|max:255',
             'pendidikan'  => 'required|string|max:255',
-            'awardee'     => 'required|string|max:255',
-            'rating'      => 'required|numeric|min:0|max:5',
+            'awardee'     => 'required|array|min:1',
+            'awardee.*'   => 'required|string|max:255',
         ]);
 
         $mentor->update($validated);

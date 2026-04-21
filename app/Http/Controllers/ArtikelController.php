@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Artikel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ArtikelController extends Controller
 {
@@ -40,10 +41,25 @@ class ArtikelController extends Controller
         $validated = $request->validate([
             'judul_artikel' => 'required|string|max:255',
             'url'           => 'required|url|max:255',
-            'thumbnail'     => 'required|url|max:255',
+            'thumbnail_file'=> 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+            'thumbnail_url' => 'nullable|url|max:500',
         ]);
 
-        Artikel::create($validated);
+        $thumbnailPath = null;
+        if ($request->hasFile('thumbnail_file')) {
+            $path = $request->file('thumbnail_file')->store('artikel_thumbnails', 'public');
+            $thumbnailPath = '/storage/' . $path;
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnailPath = $request->thumbnail_url;
+        } else {
+            return back()->withErrors(['thumbnail_file' => 'Thumbnail file atau URL wajib diisi.'])->withInput();
+        }
+
+        Artikel::create([
+            'judul_artikel' => $validated['judul_artikel'],
+            'url'           => $validated['url'],
+            'thumbnail'     => $thumbnailPath,
+        ]);
 
         return redirect()->route('artikel.index')->with('success', 'Data Artikel berhasil ditambahkan!');
     }
@@ -76,10 +92,29 @@ class ArtikelController extends Controller
         $validated = $request->validate([
             'judul_artikel' => 'required|string|max:255',
             'url'           => 'required|url|max:255',
-            'thumbnail'     => 'required|url|max:255',
+            'thumbnail_file'=> 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+            'thumbnail_url' => 'nullable|url|max:500',
         ]);
 
-        $artikel->update($validated);
+        $thumbnailPath = $artikel->thumbnail;
+        if ($request->hasFile('thumbnail_file')) {
+            if ($artikel->thumbnail && strpos($artikel->thumbnail, '/storage/') === 0) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $artikel->thumbnail));
+            }
+            $path = $request->file('thumbnail_file')->store('artikel_thumbnails', 'public');
+            $thumbnailPath = '/storage/' . $path;
+        } elseif ($request->filled('thumbnail_url')) {
+            if ($artikel->thumbnail && strpos($artikel->thumbnail, '/storage/') === 0 && $request->thumbnail_url !== $artikel->thumbnail) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $artikel->thumbnail));
+            }
+            $thumbnailPath = $request->thumbnail_url;
+        }
+
+        $artikel->update([
+            'judul_artikel' => $validated['judul_artikel'],
+            'url'           => $validated['url'],
+            'thumbnail'     => $thumbnailPath,
+        ]);
 
         return redirect()->route('artikel.index')->with('success', 'Data Artikel berhasil diperbarui!');
     }

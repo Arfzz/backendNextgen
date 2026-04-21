@@ -14,6 +14,9 @@ class PaketBeasiswa extends Model
         'nama_beasiswa',
         'fase_checkpoint',
         'persyaratan',
+        'benefit',
+        'url',
+        'gambar',
         'deadline',
         'harga',
     ];
@@ -21,6 +24,7 @@ class PaketBeasiswa extends Model
     protected $casts = [
         'fase_checkpoint' => 'array',
         'persyaratan' => 'array',
+        'benefit' => 'array',
         'harga' => 'integer',
         'deadline' => 'date',
     ];

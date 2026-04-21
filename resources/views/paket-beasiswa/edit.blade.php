@@ -8,7 +8,7 @@
 </div>
 
 <div class="form-card">
-    <form action="{{ route('paket-beasiswa.update', $paketBeasiswa->_id) }}" method="POST">
+    <form action="{{ route('paket-beasiswa.update', $paketBeasiswa->_id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -56,6 +56,48 @@
                 </div>
             @endforeach
             @error('persyaratan')
+                <div class="error-text">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group" id="benefit-container">
+            <label>Benefit</label>
+            @php
+                $benefitOld = old('benefit', is_array($paketBeasiswa->benefit) ? $paketBeasiswa->benefit : [$paketBeasiswa->benefit ?? '']);
+            @endphp
+            @foreach($benefitOld as $index => $val)
+                <div class="dynamic-input-group" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" name="benefit[]" placeholder="Contoh: Bantuan Biaya Hidup" value="{{ $val }}" required style="flex: 1;">
+                    @if($index == 0)
+                        <button type="button" class="btn btn-secondary add-benefit-btn" style="padding: 0 16px; font-size: 20px;">+</button>
+                    @else
+                        <button type="button" class="btn btn-danger remove-btn" style="padding: 0 16px; font-size: 20px; background: #FFEEEE; color: #E10000; border: none;">-</button>
+                    @endif
+                </div>
+            @endforeach
+            @error('benefit')
+                <div class="error-text">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            <label for="url">URL</label>
+            <input type="url" name="url" id="url" placeholder="Masukkan URL Beasiswa" value="{{ old('url', $paketBeasiswa->url) }}" required>
+            @error('url')
+                <div class="error-text">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            <label for="gambar">Gambar (Kosongkan jika tidak ingin mengubah)</label>
+            <input type="file" name="gambar" id="gambar" accept="image/*" class="form-control"
+                style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-family: 'Poppins', sans-serif;">
+            @if($paketBeasiswa->gambar)
+                <div style="margin-top: 10px;">
+                    <img src="{{ $paketBeasiswa->gambar }}" alt="Gambar Beasiswa" style="max-height: 100px; border-radius: 8px;">
+                </div>
+            @endif
+            @error('gambar')
                 <div class="error-text">{{ $message }}</div>
             @enderror
         </div>
@@ -116,6 +158,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.add-syarat-btn').addEventListener('click', function() {
         const container = document.getElementById('persyaratan-container');
         container.insertBefore(createRow('persyaratan', 'Contoh: IPK min 3.0'), container.lastElementChild);
+    });
+
+    // Add Benefit
+    document.querySelector('.add-benefit-btn').addEventListener('click', function() {
+        const container = document.getElementById('benefit-container');
+        container.insertBefore(createRow('benefit', 'Contoh: Pelatihan Eksklusif'), container.lastElementChild);
     });
 
     // Remove Event Delegation

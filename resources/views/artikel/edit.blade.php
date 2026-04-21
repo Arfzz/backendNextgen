@@ -18,7 +18,7 @@
             </div>
         @endif
 
-        <form action="{{ route('artikel.update', $artikel->_id) }}" method="POST">
+        <form action="{{ route('artikel.update', $artikel->_id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -35,13 +35,29 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 20px;">
-                <label for="thumbnail" style="display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px;">URL Gambar Thumbnail</label>
-                <input type="url" name="thumbnail" id="thumbnail" class="form-control" value="{{ old('thumbnail', $artikel->thumbnail) }}" required
-                    style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-family: 'Poppins', sans-serif;">
-                <div style="margin-top: 10px;">
-                    <span style="font-size: 12px; color: #777; display: block; margin-bottom: 6px;">Pratinjau Thumbnail Saat ini:</span>
-                    <img src="{{ Str::startsWith($artikel->thumbnail, ['http', '/']) ? $artikel->thumbnail : asset('storage/' . $artikel->thumbnail) }}" alt="Thumbnail Preview" style="max-height: 124px; border-radius: 8px; box-shadow: 0px 1px 4px rgba(0,0,0,0.15);">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px;">Thumbnail Gambar (Kosongkan jika tidak ingin mengubah)</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label for="thumbnail_file" style="display: block; margin-bottom: 8px; font-size: 13px; color: #64748B;">Upload File Baru</label>
+                        <input type="file" name="thumbnail_file" id="thumbnail_file" class="form-control" accept="image/*"
+                            style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-family: 'Poppins', sans-serif;">
+                    </div>
+                    <div>
+                        <label for="thumbnail_url" style="display: block; margin-bottom: 8px; font-size: 13px; color: #64748B;">Atau URL Link Gambar</label>
+                        <input type="url" name="thumbnail_url" id="thumbnail_url" class="form-control" value="{{ old('thumbnail_url', $artikel->thumbnail) }}"
+                            placeholder="https://..."
+                            style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-family: 'Poppins', sans-serif;">
+                    </div>
                 </div>
+                @if($artikel->thumbnail)
+                <div style="margin-top: 16px;">
+                    <span style="font-size: 12px; color: #777; display: block; margin-bottom: 6px;">Pratinjau Thumbnail Saat ini:</span>
+                    <img src="{{ $artikel->thumbnail }}" alt="Thumbnail Preview" style="max-height: 124px; border-radius: 8px; box-shadow: 0px 1px 4px rgba(0,0,0,0.15);">
+                </div>
+                @endif
+                @error('thumbnail_file')
+                    <div class="error-text" style="color: #E10000; margin-top: 8px;">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="form-actions modern">

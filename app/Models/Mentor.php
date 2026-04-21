@@ -14,10 +14,9 @@ class Mentor extends Model
         'nama_mentor',
         'pendidikan',
         'awardee',
-        'rating',
     ];
 
     protected $casts = [
-        'rating' => 'float',
+        'awardee' => 'array',
     ];
 }

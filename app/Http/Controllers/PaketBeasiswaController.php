@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PaketBeasiswa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PaketBeasiswaController extends Controller
 {
@@ -44,9 +45,18 @@ class PaketBeasiswaController extends Controller
             'fase_checkpoint.*' => 'required|string',
             'persyaratan' => 'required|array|min:1',
             'persyaratan.*' => 'required|string',
+            'benefit' => 'required|array|min:1',
+            'benefit.*' => 'required|string',
+            'url' => 'required|url|max:255',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'deadline' => 'required|date',
             'harga' => 'required|integer|min:0',
         ]);
+
+        if ($request->hasFile('gambar')) {
+            $path = $request->file('gambar')->store('paket_beasiswa', 'public');
+            $validated['gambar'] = '/storage/' . $path;
+        }
 
         PaketBeasiswa::create($validated);
 
@@ -83,11 +93,24 @@ class PaketBeasiswaController extends Controller
             'fase_checkpoint.*' => 'required|string',
             'persyaratan' => 'required|array|min:1',
             'persyaratan.*' => 'required|string',
+            'benefit' => 'required|array|min:1',
+            'benefit.*' => 'required|string',
+            'url' => 'required|url|max:255',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'deadline' => 'required|date',
             'harga' => 'required|integer|min:0',
         ]);
 
         $paketBeasiswa = PaketBeasiswa::findOrFail($id);
+
+        if ($request->hasFile('gambar')) {
+            if ($paketBeasiswa->gambar && strpos($paketBeasiswa->gambar, '/storage/') === 0) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $paketBeasiswa->gambar));
+            }
+            $path = $request->file('gambar')->store('paket_beasiswa', 'public');
+            $validated['gambar'] = '/storage/' . $path;
+        }
+
         $paketBeasiswa->update($validated);
 
         return redirect()->route('paket-beasiswa.index')
