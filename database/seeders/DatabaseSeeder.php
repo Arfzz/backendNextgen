@@ -2,24 +2,36 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
+     * Order matters — Users and Packages must exist before Classes.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Bersihkan data lama agar tidak terjadi bentrok Duplicate Key saat db:seed dijalankan ulang
+        \App\Models\User::truncate();
+        \App\Models\Package::truncate();
+        \App\Models\Article::truncate();
+        \App\Models\Kelas::truncate();
+        \App\Models\ClassMember::truncate();
+        \App\Models\Task::truncate();
+        \App\Models\TaskSubmission::truncate();
+        \App\Models\Checkpoint::truncate();
+        \App\Models\StudentCheckpoint::truncate();
+        \App\Models\MentoringSession::truncate();
+        \App\Models\Document::truncate();
+        \App\Models\PersonalAccessToken::truncate();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            UserSeeder::class,
+            PackageSeeder::class,
+            ArticleSeeder::class,
+            ClassSeeder::class,
         ]);
     }
 }
+

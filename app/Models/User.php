@@ -2,31 +2,50 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use MongoDB\Laravel\Eloquent\Model;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Model implements \Illuminate\Contracts\Auth\Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
+    use \Illuminate\Auth\Authenticatable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    /** @use HasFactory<UserFactory> */
+    protected static string $factory = UserFactory::class;
+
+    protected $connection = 'pjblNextgen';
+
+    protected $collection = 'users';
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'university',
+        'profile_picture',
+        'device_token',
+        'rating_score',
+        'students_passed',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
+            'role'              => UserRole::class,
+            'rating_score'      => 'float',
+            'students_passed'   => 'integer',
         ];
     }
 }
