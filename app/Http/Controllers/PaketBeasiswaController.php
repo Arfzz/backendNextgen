@@ -51,6 +51,7 @@ class PaketBeasiswaController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'deadline' => 'required|date',
             'harga' => 'required|integer|min:0',
+            'status' => 'required|in:show,no',
         ]);
 
         if ($request->hasFile('gambar')) {
@@ -99,6 +100,7 @@ class PaketBeasiswaController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'deadline' => 'required|date',
             'harga' => 'required|integer|min:0',
+            'status' => 'required|in:show,no',
         ]);
 
         $paketBeasiswa = PaketBeasiswa::findOrFail($id);

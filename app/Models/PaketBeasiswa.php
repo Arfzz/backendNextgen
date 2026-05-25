@@ -19,6 +19,7 @@ class PaketBeasiswa extends Model
         'gambar',
         'deadline',
         'harga',
+        'status',
     ];
 
     protected $casts = [

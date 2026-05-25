@@ -29,9 +29,12 @@ class EnsureRole
             : $user->role;
 
         if ($userRole !== $role) {
-            return response()->json([
-                'message' => "Forbidden. This endpoint requires role: {$role}.",
-            ], 403);
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => "Forbidden. This endpoint requires role: {$role}.",
+                ], 403);
+            }
+            abort(403, "Anda tidak memiliki akses halaman ini.");
         }
 
         return $next($request);

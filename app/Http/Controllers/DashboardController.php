@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PaketBeasiswa;
 use App\Models\Mentor;
 use App\Models\Artikel;
+use App\Models\Testimonial;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -15,9 +16,11 @@ class DashboardController extends Controller
     public function index()
     {
         // Fetch real data metrics
-        $totalBeasiswa = PaketBeasiswa::count();
-        $totalMentor = Mentor::count();
-        $totalArtikel = Artikel::count();
+        $totalBeasiswa   = PaketBeasiswa::count();
+        $totalMentor     = Mentor::count();
+        $totalArtikel    = Artikel::count();
+        $totalTestimoni  = Testimonial::count();
+        $pendingTestimoni = Testimonial::where('status', 'pending')->count();
 
         // Create Mock data for the 'Revenue Per Bulan' Chart
         $chartData = [
@@ -29,6 +32,8 @@ class DashboardController extends Controller
             'totalBeasiswa',
             'totalMentor',
             'totalArtikel',
+            'totalTestimoni',
+            'pendingTestimoni',
             'chartData'
         ));
     }

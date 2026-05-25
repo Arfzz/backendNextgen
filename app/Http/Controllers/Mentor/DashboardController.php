@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ClassMemberResource;
 use App\Http\Resources\MentorResource;
-use App\Http\Resources\UserResource;
 use App\Services\MentorDashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,9 +17,10 @@ class DashboardController extends Controller
         $data = $this->service->dashboard($request->user());
 
         return response()->json([
-            'mentor'              => new MentorResource($data['mentor']),
+            'mentor_profile'      => new MentorResource($data['mentor_profile']),
             'upcoming_activities' => $data['upcoming_activities'],
-            'students'            => ClassMemberResource::collection($data['students']),
+            'students'            => $data['students'], // already plain array from service
         ]);
     }
 }
+

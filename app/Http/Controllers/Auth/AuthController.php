@@ -29,16 +29,24 @@ class AuthController extends Controller
     {
         $result = $this->authService->login($request);
 
+        $userResource = isset($result['is_mentor']) && $result['is_mentor']
+            ? new \App\Http\Resources\MentorResource($result['user'])
+            : new UserResource($result['user']);
+
         return response()->json([
             'message' => 'Login successful.',
             'token'   => $result['token'],
-            'user'    => new UserResource($result['user']),
+            'user'    => $userResource,
         ]);
     }
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json(new UserResource($request->user()));
+        $user = $request->user();
+        if ($user instanceof \App\Models\Mentor) {
+            return response()->json(new \App\Http\Resources\MentorResource($user));
+        }
+        return response()->json(new UserResource($user));
     }
 
     public function logout(Request $request): JsonResponse

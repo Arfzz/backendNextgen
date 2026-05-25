@@ -44,6 +44,7 @@
                             <th class="col-persyaratan">Persyaratan</th>
                             <th>Deadline</th>
                             <th>Harga</th>
+                            <th>Status</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -60,6 +61,13 @@
                                 </td>
                                 <td>{{ $paket->deadline ? $paket->deadline->format('d M Y') : '-' }}</td>
                                 <td class="col-harga">Rp {{ number_format($paket->harga, 0, ',', '.') }}</td>
+                                <td>
+                                    @if($paket->status == 'show')
+                                        <span style="background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 9999px; font-size: 12px; font-weight: 600;">Show</span>
+                                    @else
+                                        <span style="background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 9999px; font-size: 12px; font-weight: 600;">No</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="action-btn view" title="Lihat Detail" id="view-{{ $paket->_id }}" onclick="openDetailModal({{ json_encode($paket) }})">

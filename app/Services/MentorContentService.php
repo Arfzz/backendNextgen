@@ -22,7 +22,7 @@ class MentorContentService
 
     // ── Tasks ────────────────────────────────────────────────────────────────
 
-    public function createTask(string $classId, User $mentor, array $data): mixed
+    public function createTask(string $classId, $mentor, array $data): mixed
     {
         return $this->taskRepo->create([
             'class_id'      => $classId,
@@ -73,13 +73,28 @@ class MentorContentService
             'class_id'     => $classId,
             'title'        => $data['title'],
             'session_date' => $data['session_date'],
-            'link'         => $data['link'],
+            'link'         => $data['link'] ?? null,
         ]);
+    }
+
+    public function updateMentoringSession(string $sessionId, array $data): mixed
+    {
+        $session = $this->mentoringRepo->findById($sessionId);
+        if (! $session) return null;
+
+        $this->mentoringRepo->update($session, $data);
+        return $session->fresh();
+    }
+
+    public function deleteMentoringSession(string $sessionId): bool
+    {
+        $session = $this->mentoringRepo->findById($sessionId);
+        return $session ? $this->mentoringRepo->delete($session) : false;
     }
 
     // ── Documents ────────────────────────────────────────────────────────────
 
-    public function uploadDocument(string $classId, User $mentor, array $data, $file): mixed
+    public function uploadDocument(string $classId, $mentor, array $data, $file): mixed
     {
         $fileUrl = $this->fileUploadService->upload($file, 'documents');
 
@@ -90,5 +105,11 @@ class MentorContentService
             'uploaded_by' => (string) $mentor->_id,
             'uploaded_at' => now(),
         ]);
+    }
+
+    public function deleteDocument(string $documentId): bool
+    {
+        $doc = $this->documentRepo->findById($documentId);
+        return $doc ? $this->documentRepo->delete($doc) : false;
     }
 }

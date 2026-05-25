@@ -34,6 +34,15 @@ class AuthService
     public function login(LoginRequest $request): array
     {
         $user = $this->userRepository->findByEmail($request->email);
+        $isMentor = false;
+
+        if (!$user) {
+            // Check mentor table
+            $user = \App\Models\Mentor::where('email', $request->email)->first();
+            if ($user) {
+                $isMentor = true;
+            }
+        }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
@@ -43,8 +52,9 @@ class AuthService
 
         // Revoke all old tokens for single-session login
         $user->tokens()->delete();
+        // Determine role and abilities if needed, but plainTextToken is fine
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return ['user' => $user, 'token' => $token];
+        return ['user' => $user, 'token' => $token, 'is_mentor' => $isMentor];
     }
 }

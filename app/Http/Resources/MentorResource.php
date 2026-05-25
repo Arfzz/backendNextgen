@@ -11,11 +11,14 @@ class MentorResource extends JsonResource
     {
         return [
             'id'              => (string) $this->_id,
-            'name'            => $this->name,
-            'university'      => $this->university,
+            'name'            => $this->name ?? $this->nama_mentor,
+            'email'           => $this->email,
+            'role'            => 'mentor',
+            'university'      => $this->university ?? $this->pendidikan,
             'profile_picture' => $this->profile_picture,
-            'rating_score'    => $this->rating_score ?? 0.0,
+            'rating_score'    => $this->rating_score ?? $this->rating ?? 5.0,
             'students_passed' => $this->students_passed ?? 0,
+            'awardee'         => $this->awardee ?? [],
         ];
     }
 }

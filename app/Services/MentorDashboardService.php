@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Enums\SubmissionStatus;
 use App\Models\User;
-use App\Repositories\ClassMemberRepository;
+use App\Models\PaketBeasiswa;
 use App\Repositories\ClassRepository;
 use App\Repositories\MentoringSessionRepository;
 use App\Repositories\TaskRepository;
@@ -15,7 +15,6 @@ class MentorDashboardService
 {
     public function __construct(
         private readonly ClassRepository          $classRepo,
-        private readonly ClassMemberRepository    $classMemberRepo,
         private readonly TaskRepository           $taskRepo,
         private readonly MentoringSessionRepository $mentoringRepo,
         private readonly TaskSubmissionRepository $submissionRepo,
@@ -24,20 +23,24 @@ class MentorDashboardService
 
     /**
      * Aggregate dashboard data for a mentor.
+     * Students are matched by overlapping beasiswa_diampu between mentor and student.
      */
-    public function dashboard(User $mentor): array
+    public function dashboard($mentor): array
     {
-        $classes  = $this->classRepo->findByMentorId((string) $mentor->_id);
-        $classIds = $classes->pluck('_id')->map(fn ($id) => (string) $id)->toArray();
+        $beasiswaDiampu = $mentor->beasiswa_diampu ?? [];
+
+        // Resolve paket objects for this mentor's beasiswa list
+        $pakets   = PaketBeasiswa::whereIn('nama_beasiswa', $beasiswaDiampu)->get();
+        $paketIds = $pakets->pluck('_id')->map(fn ($id) => (string) $id)->toArray();
 
         // Upcoming tasks (close deadlines)
-        $upcomingTasks = $classIds
-            ? $this->taskRepo->findUpcomingByClassIds($classIds, 3)->all()
+        $upcomingTasks = $paketIds
+            ? $this->taskRepo->findUpcomingByClassIds($paketIds, 3)->all()
             : [];
 
         // Upcoming mentoring sessions
-        $upcomingSessions = $classIds
-            ? $this->mentoringRepo->findUpcomingByClassIds($classIds, 3)->all()
+        $upcomingSessions = $paketIds
+            ? $this->mentoringRepo->findUpcomingByClassIds($paketIds, 3)->all()
             : [];
 
         $upcomingActivities = collect($upcomingTasks)
@@ -60,18 +63,40 @@ class MentorDashboardService
             ->values()
             ->all();
 
-        // All students in mentor's classes (with nested student info)
-        $members = $classIds
-            ? $this->classMemberRepo->findByClassId($classIds[0] ?? '')->all()
-            : [];
+        // ── Students: match by beasiswa_diampu overlap ──────────────────
+        // Find all student-role users who have AT LEAST ONE beasiswa in common
+        // with this mentor's beasiswa_diampu list.
+        $students = [];
 
-        $students = collect($members)->map(function ($m) {
-            $m->student = $this->userRepo->findById((string) $m->student_id);
-            return $m;
-        })->all();
+        if (! empty($beasiswaDiampu)) {
+            // MongoDB: whereIn on an array field checks if the array field contains
+            // any of the given values (equivalent to { beasiswa_diampu: { $in: [...] } })
+            $matchedStudents = User::where('role', 'student')
+                ->whereIn('beasiswa_diampu', $beasiswaDiampu)
+                ->get();
+
+            foreach ($matchedStudents as $student) {
+                // Determine which paket labels to show (intersection)
+                $studentBeasiswa = $student->beasiswa_diampu ?? [];
+                $sharedBeasiswa  = array_values(array_intersect($beasiswaDiampu, $studentBeasiswa));
+                $paketLabel      = implode(', ', $sharedBeasiswa);
+
+                // Progress is stored on the user after each submission
+                $progress = $student->progress_percentage ?? 0;
+
+                $students[] = [
+                    'student_id'      => (string) $student->_id,
+                    'name'            => $student->name,
+                    'profile_picture' => $student->profile_picture,
+                    'paket'           => $paketLabel,
+                    'progress'        => $progress,
+                    'university'      => $student->university ?? '',
+                ];
+            }
+        }
 
         return [
-            'mentor'              => $mentor,
+            'mentor_profile'      => $mentor,
             'upcoming_activities' => $upcomingActivities,
             'students'            => $students,
         ];

@@ -118,6 +118,17 @@
             @enderror
         </div>
 
+        <div class="form-group">
+            <label for="status">Status (Tampilkan di Web)</label>
+            <select name="status" id="status" class="form-control" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-family: 'Poppins', sans-serif;" required>
+                <option value="show" {{ old('status', $paketBeasiswa->status) == 'show' ? 'selected' : '' }}>Show</option>
+                <option value="no" {{ old('status', $paketBeasiswa->status) == 'no' ? 'selected' : '' }}>No</option>
+            </select>
+            @error('status')
+                <div class="error-text">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

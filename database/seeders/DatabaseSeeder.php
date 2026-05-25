@@ -25,12 +25,15 @@ class DatabaseSeeder extends Seeder
         \App\Models\MentoringSession::truncate();
         \App\Models\Document::truncate();
         \App\Models\PersonalAccessToken::truncate();
+        \App\Models\Testimonial::truncate();
+        \App\Models\Mentor::truncate();
 
         $this->call([
             UserSeeder::class,
             PackageSeeder::class,
             ArticleSeeder::class,
             ClassSeeder::class,
+            TestimonialSeeder::class,
         ]);
     }
 }

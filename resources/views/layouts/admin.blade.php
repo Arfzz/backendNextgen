@@ -68,10 +68,31 @@
                     </span>
                     <span>Artikel</span>
                 </a>
+                <a href="{{ route('testimonial.index') }}"
+                    class="nav-item {{ request()->is('testimonial*') ? 'active' : '' }}">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                        </svg>
+                    </span>
+                    <span>Testimoni</span>
+                </a>
+                <a href="{{ route('users.index') }}" class="nav-item {{ request()->is('users*') ? 'active' : '' }}">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                    </span>
+                    <span>Pengguna</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <span class="nav-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -82,6 +103,9 @@
                     </span>
                     <span>Keluar</span>
                 </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </div>
         </aside>
 
@@ -99,7 +123,7 @@
                 </button>
                 <div class="topbar-profile">
                     <div class="profile-info">
-                        <div class="profile-name" style="text-align: left;">Admin</div>
+                        <div class="profile-name" style="text-align: left;">{{ Auth::user()->name ?? 'Admin' }}</div>
                         <div class="profile-role" style="text-align: left;">NextGen Community</div>
                     </div>
                     <img src="{{ asset('images/avatar.png') }}" alt="Admin" class="profile-avatar">

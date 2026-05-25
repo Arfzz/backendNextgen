@@ -12,6 +12,7 @@ class PackageResource extends JsonResource
         return [
             'id'            => (string) $this->_id,
             'title'         => $this->title,
+            'description'   => $this->description,
             'deadline_date' => $this->deadline_date?->toDateString(),
             'price'         => $this->price,
             'old_price'     => $this->old_price,

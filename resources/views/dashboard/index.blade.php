@@ -55,6 +55,26 @@
                 <div class="stat-value">{{ $totalArtikel ?? 0 }}</div>
             </div>
         </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(242, 188, 69, 0.15), rgba(245, 158, 11, 0.15)); color: #D97706;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+            </div>
+            <div class="stat-details">
+                <div class="stat-title">Total Testimoni</div>
+                <div class="stat-value" style="display: flex; align-items: center; gap: 8px;">
+                    {{ $totalTestimoni ?? 0 }}
+                    @if(($pendingTestimoni ?? 0) > 0)
+                        <span style="background: #FFF8E7; color: #B8860B; font-size: 12px; padding: 2px 10px; border-radius: 20px; font-weight: 600;">
+                            {{ $pendingTestimoni }} pending
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Dashboard Charts Container --}}

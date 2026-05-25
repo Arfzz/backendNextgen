@@ -7,6 +7,11 @@ use Illuminate\Support\Collection;
 
 class MentoringSessionRepository
 {
+    public function findById(string $id): ?MentoringSession
+    {
+        return MentoringSession::find($id);
+    }
+
     public function findByClassId(string $classId): Collection
     {
         return MentoringSession::where('class_id', $classId)
@@ -17,6 +22,16 @@ class MentoringSessionRepository
     public function create(array $data): MentoringSession
     {
         return MentoringSession::create($data);
+    }
+
+    public function update(MentoringSession $session, array $data): bool
+    {
+        return $session->update($data);
+    }
+
+    public function delete(MentoringSession $session): bool
+    {
+        return $session->delete();
     }
 
     public function findUpcomingByClassIds(array $classIds, int $limit = 3): Collection

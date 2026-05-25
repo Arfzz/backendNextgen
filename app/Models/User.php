@@ -6,7 +6,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use App\Traits\HasApiTokens;
 use MongoDB\Laravel\Eloquent\Model;
 
 class User extends Model implements \Illuminate\Contracts\Auth\Authenticatable
@@ -31,6 +31,8 @@ class User extends Model implements \Illuminate\Contracts\Auth\Authenticatable
         'device_token',
         'rating_score',
         'students_passed',
+        'beasiswa_diampu',
+        'progress_percentage',
     ];
 
     protected $hidden = [
@@ -41,11 +43,13 @@ class User extends Model implements \Illuminate\Contracts\Auth\Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'role'              => UserRole::class,
-            'rating_score'      => 'float',
-            'students_passed'   => 'integer',
+            'email_verified_at'    => 'datetime',
+            'password'             => 'hashed',
+            'role'                 => UserRole::class,
+            'rating_score'         => 'float',
+            'students_passed'      => 'integer',
+            'beasiswa_diampu'      => 'array',
+            'progress_percentage'  => 'integer',
         ];
     }
 }

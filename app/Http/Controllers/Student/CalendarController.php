@@ -19,6 +19,6 @@ class CalendarController extends Controller
 
         $events = $this->calendarService->getEvents($userId, $month, $year);
 
-        return response()->json(['events' => $events]);
+        return response()->json($events);
     }
 }

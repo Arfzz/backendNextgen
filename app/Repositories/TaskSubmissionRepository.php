@@ -25,6 +25,30 @@ class TaskSubmissionRepository
         return TaskSubmission::where('student_id', $studentId)->get();
     }
 
+    /**
+     * Count distinct tasks submitted (status submitted|graded) by a student
+     * whose task belongs to any of the given class_ids (paket _ids).
+     * Uses two-step approach since MongoDB doesn't support SQL subqueries.
+     */
+    public function countSubmittedByStudentForClasses(string $studentId, array $classIds): int
+    {
+        // Step 1: collect all task IDs in those classes
+        $taskIds = \App\Models\Task::whereIn('class_id', $classIds)
+            ->pluck('_id')
+            ->map(fn($id) => (string) $id)
+            ->toArray();
+
+        if (empty($taskIds)) {
+            return 0;
+        }
+
+        // Step 2: count how many of those tasks have been submitted/graded by the student
+        return TaskSubmission::where('student_id', $studentId)
+            ->whereIn('status', ['submitted', 'graded'])
+            ->whereIn('task_id', $taskIds)
+            ->count();
+    }
+
     public function create(array $data): TaskSubmission
     {
         return TaskSubmission::create($data);

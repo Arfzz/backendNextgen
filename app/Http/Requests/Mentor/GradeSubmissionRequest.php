@@ -11,8 +11,9 @@ class GradeSubmissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'score'    => ['required', 'integer', 'min:0', 'max:100'],
+            'score'    => ['nullable', 'integer', 'min:0', 'max:100'],
             'feedback' => ['nullable', 'string', 'max:2000'],
+            'status'   => ['nullable', 'string', 'in:pending,submitted,graded'],
         ];
     }
 }
