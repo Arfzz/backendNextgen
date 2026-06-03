@@ -20,7 +20,7 @@ class UserController extends Controller
                   ->orWhere('email', 'like', "%{$search}%");
         }
 
-        $users   = $query->get();
+        $users   = $query->paginate(20);
         $pakets  = PaketBeasiswa::orderBy('nama_beasiswa')->get();
 
         return view('users.index', compact('users', 'search', 'pakets'));
@@ -34,9 +34,15 @@ class UserController extends Controller
             'password'   => 'required|string|min:8',
             'role'       => ['required', 'string', Rule::in(['student', 'admin', 'mentor'])],
             'university' => 'nullable|string|max:255',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+
+        if ($request->hasFile('profile_picture')) {
+            $path = $request->file('profile_picture')->store('profiles', 'public');
+            $validated['profile_picture'] = $path;
+        }
 
         User::create($validated);
 
@@ -53,12 +59,21 @@ class UserController extends Controller
             'password'   => 'nullable|string|min:8',
             'role'       => ['required', 'string', Rule::in(['student', 'admin', 'mentor'])],
             'university' => 'nullable|string|max:255',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if (! empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
+        }
+
+        if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile_picture)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_picture);
+            }
+            $path = $request->file('profile_picture')->store('profiles', 'public');
+            $validated['profile_picture'] = $path;
         }
 
         // Only process beasiswa_diampu for student role

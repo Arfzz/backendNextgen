@@ -13,7 +13,7 @@ class UpdateTaskRequest extends FormRequest
         return [
             'title'         => ['sometimes', 'string', 'max:255'],
             'description'   => ['sometimes', 'string'],
-            'deadline_date' => ['sometimes', 'date', 'after:today'],
+            'deadline_date' => ['sometimes', 'string'],
         ];
     }
 }

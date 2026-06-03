@@ -19,6 +19,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('mentor', \App\Http\Controllers\MentorController::class);
     Route::resource('artikel', \App\Http\Controllers\ArtikelController::class);
     Route::resource('users', \App\Http\Controllers\UserController::class);
+
+    // Order / Payment CMS
+    Route::get('orders', [\App\Http\Controllers\OrderCmsController::class, 'index'])->name('orders.index');
+    Route::get('orders/export-pdf', [\App\Http\Controllers\OrderCmsController::class, 'exportPdf'])->name('orders.exportPdf');
+    Route::get('orders/{id}/invoice', [\App\Http\Controllers\OrderCmsController::class, 'printInvoice'])->name('orders.printInvoice');
+    Route::get('orders/{id}', [\App\Http\Controllers\OrderCmsController::class, 'show'])->name('orders.show');
+    Route::post('orders/{id}/status', [\App\Http\Controllers\OrderCmsController::class, 'updateStatus'])->name('orders.updateStatus');
 });
 
 // Public testimonial form page (2-step: login → form)

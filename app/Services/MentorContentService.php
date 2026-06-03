@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PaketBeasiswa;
 use App\Models\User;
 use App\Repositories\CheckpointRepository;
 use App\Repositories\DocumentRepository;
@@ -22,14 +23,23 @@ class MentorContentService
 
     // ── Tasks ────────────────────────────────────────────────────────────────
 
-    public function createTask(string $classId, $mentor, array $data): mixed
+    public function createTask(string $classId, $mentor, array $data, $request = null): mixed
     {
+        $paket = PaketBeasiswa::find($classId);
+
+        $fileUrl = null;
+        if ($request && $request->hasFile('file')) {
+            $fileUrl = $this->fileUploadService->upload($request->file('file'), 'tasks');
+        }
+
         return $this->taskRepo->create([
-            'class_id'      => $classId,
-            'mentor_id'     => (string) $mentor->_id,
-            'title'         => $data['title'],
-            'description'   => $data['description'],
-            'deadline_date' => $data['deadline_date'],
+            'class_id'       => $classId,
+            'paket_beasiswa' => $paket?->nama_beasiswa,
+            'mentor_id'      => (string) $mentor->_id,
+            'title'          => $data['title'],
+            'description'    => $data['description'],
+            'deadline_date'  => $data['deadline_date'],
+            'file_url'       => $fileUrl,
         ]);
     }
 
@@ -67,13 +77,17 @@ class MentorContentService
 
     // ── Mentoring Sessions ───────────────────────────────────────────────────
 
-    public function createMentoringSession(string $classId, array $data): mixed
+    public function createMentoringSession(string $classId, $mentor, array $data): mixed
     {
+        $paket = PaketBeasiswa::find($classId);
+
         return $this->mentoringRepo->create([
-            'class_id'     => $classId,
-            'title'        => $data['title'],
-            'session_date' => $data['session_date'],
-            'link'         => $data['link'] ?? null,
+            'class_id'       => $classId,
+            'paket_beasiswa' => $paket?->nama_beasiswa,
+            'mentor_id'      => (string) $mentor->_id,
+            'title'          => $data['title'],
+            'session_date'   => $data['session_date'],
+            'link'           => $data['link'] ?? null,
         ]);
     }
 
@@ -96,14 +110,17 @@ class MentorContentService
 
     public function uploadDocument(string $classId, $mentor, array $data, $file): mixed
     {
+        $paket   = PaketBeasiswa::find($classId);
         $fileUrl = $this->fileUploadService->upload($file, 'documents');
 
         return $this->documentRepo->create([
-            'class_id'    => $classId,
-            'title'       => $data['title'],
-            'file_url'    => $fileUrl,
-            'uploaded_by' => (string) $mentor->_id,
-            'uploaded_at' => now(),
+            'class_id'       => $classId,
+            'paket_beasiswa' => $paket?->nama_beasiswa,
+            'mentor_id'      => (string) $mentor->_id,
+            'title'          => $data['title'],
+            'file_url'       => $fileUrl,
+            'uploaded_by'    => (string) $mentor->_id,
+            'uploaded_at'    => now(),
         ]);
     }
 

@@ -19,11 +19,12 @@ class AuthService
     public function register(RegisterRequest $request): array
     {
         $user = $this->userRepository->create([
-            'name'       => $request->name,
-            'email'      => $request->email,
-            'password'   => $request->password, // casted as 'hashed' in model
-            'role'       => UserRole::Student->value,
-            'university' => $request->university,
+            'name'            => $request->name,
+            'email'           => $request->email,
+            'password'        => $request->password, // casted as 'hashed' in model
+            'role'            => UserRole::Student->value,
+            'university'      => $request->university,
+            'beasiswa_diampu' => $request->beasiswa_diampu ?? [],
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

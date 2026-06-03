@@ -13,7 +13,7 @@ class GradeSubmissionRequest extends FormRequest
         return [
             'score'    => ['nullable', 'integer', 'min:0', 'max:100'],
             'feedback' => ['nullable', 'string', 'max:2000'],
-            'status'   => ['nullable', 'string', 'in:pending,submitted,graded'],
+            'status'   => ['nullable', 'string', 'in:pending,submitted,reviewed,graded'],
         ];
     }
 }

@@ -40,4 +40,22 @@ class TaskRepository
             ->limit($limit)
             ->get();
     }
+
+    /**
+     * Query by paket_beasiswa names (string array matching beasiswa_diampu).
+     */
+    public function findUpcomingByBeasiswa(array $beasiswaNames, int $limit = 5): Collection
+    {
+        return Task::whereIn('paket_beasiswa', $beasiswaNames)
+            ->orderBy('deadline_date')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function findByBeasiswa(array $beasiswaNames): Collection
+    {
+        return Task::whereIn('paket_beasiswa', $beasiswaNames)
+            ->orderBy('deadline_date')
+            ->get();
+    }
 }

@@ -41,22 +41,23 @@ class UserSeeder extends Seeder
             'students_passed' => 98,
         ]);
 
-        // Students
+        // Students — assign beasiswa_diampu matching a real paket name
         $students = [
-            ['name' => 'Andi Pratama',   'email' => 'student1@nalarin.id', 'university' => 'Universitas Gadjah Mada'],
-            ['name' => 'Dian Novita',    'email' => 'student2@nalarin.id', 'university' => 'Institut Pertanian Bogor'],
-            ['name' => 'Rizki Maulana',  'email' => 'student3@nalarin.id', 'university' => 'Universitas Airlangga'],
-            ['name' => 'Fatimah Zahra',  'email' => 'student4@nalarin.id', 'university' => 'Universitas Diponegoro'],
-            ['name' => 'Kevin Hartono',  'email' => 'student5@nalarin.id', 'university' => 'ITS Surabaya'],
+            ['name' => 'Andi Pratama',  'email' => 'student1@nalarin.id', 'university' => 'Universitas Gadjah Mada',    'beasiswa' => ['Beasiswa Unggulan']],
+            ['name' => 'Dian Novita',   'email' => 'student2@nalarin.id', 'university' => 'Institut Pertanian Bogor',   'beasiswa' => ['Beasiswa Unggulan', 'Beasiswa KIPK']],
+            ['name' => 'Rizki Maulana', 'email' => 'student3@nalarin.id', 'university' => 'Universitas Airlangga',      'beasiswa' => ['Tanoto Scholarship']],
+            ['name' => 'Fatimah Zahra', 'email' => 'student4@nalarin.id', 'university' => 'Universitas Diponegoro',     'beasiswa' => ['Beasiswa KIPK']],
+            ['name' => 'Kevin Hartono', 'email' => 'student5@nalarin.id', 'university' => 'ITS Surabaya',               'beasiswa' => ['Beasiswa Unggulan']],
         ];
 
         foreach ($students as $s) {
             User::create([
-                'name'       => $s['name'],
-                'email'      => $s['email'],
-                'password'   => Hash::make('password'),
-                'role'       => UserRole::Student->value,
-                'university' => $s['university'],
+                'name'            => $s['name'],
+                'email'           => $s['email'],
+                'password'        => Hash::make('password'),
+                'role'            => UserRole::Student->value,
+                'university'      => $s['university'],
+                'beasiswa_diampu' => $s['beasiswa'],
             ]);
         }
 

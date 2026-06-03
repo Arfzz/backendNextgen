@@ -13,7 +13,8 @@ class StoreTaskRequest extends FormRequest
         return [
             'title'         => ['required', 'string', 'max:255'],
             'description'   => ['required', 'string'],
-            'deadline_date' => ['required', 'date', 'after:today'],
+            'deadline_date' => ['required', 'string'],
+            'file'          => ['nullable', 'file', 'max:20480'], // optional attachment
         ];
     }
 }

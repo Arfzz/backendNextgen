@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Enums\SubmissionStatus;
+use App\Enums\UserRole;
+use App\Models\Graduation;
 use App\Models\User;
 use App\Models\PaketBeasiswa;
-use App\Repositories\ClassRepository;
+use App\Models\CheckpointSubmission;
 use App\Repositories\MentoringSessionRepository;
 use App\Repositories\TaskRepository;
 use App\Repositories\TaskSubmissionRepository;
@@ -14,48 +16,79 @@ use App\Repositories\UserRepository;
 class MentorDashboardService
 {
     public function __construct(
-        private readonly ClassRepository          $classRepo,
-        private readonly TaskRepository           $taskRepo,
+        private readonly TaskRepository             $taskRepo,
         private readonly MentoringSessionRepository $mentoringRepo,
-        private readonly TaskSubmissionRepository $submissionRepo,
-        private readonly UserRepository           $userRepo,
+        private readonly TaskSubmissionRepository   $submissionRepo,
+        private readonly UserRepository             $userRepo,
     ) {}
 
     /**
+     * Normalize a value that may be a PHP array, a JSON-encoded string,
+     * or null → always returns a PHP array.
+     * MongoDB sometimes stores casted array fields as JSON strings if the
+     * original insert bypassed Eloquent (e.g. seeder or direct insert).
+     */
+    private function normalizeArray(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_string($value) && str_starts_with(trim($value), '[')) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        return [];
+    }
+
+    /**
      * Aggregate dashboard data for a mentor.
-     * Students are matched by overlapping beasiswa_diampu between mentor and student.
      */
     public function dashboard($mentor): array
     {
-        $beasiswaDiampu = $mentor->beasiswa_diampu ?? [];
+        // ── Normalize mentor beasiswa_diampu (may be JSON string in DB) ──
+        $beasiswaDiampu = $this->normalizeArray($mentor->beasiswa_diampu ?? []);
 
-        // Resolve paket objects for this mentor's beasiswa list
-        $pakets   = PaketBeasiswa::whereIn('nama_beasiswa', $beasiswaDiampu)->get();
-        $paketIds = $pakets->pluck('_id')->map(fn ($id) => (string) $id)->toArray();
+        // Calculate students passed — read from `graduations` collection
+        // keyed by mentor_id so it reflects all beasiswas the mentor ever handled.
+        $passedCount = 0;
+        if (! empty($beasiswaDiampu)) {
+            $passedCount = Graduation::where('status', 'lulus')
+                ->where(function ($q) use ($beasiswaDiampu) {
+                    foreach ($beasiswaDiampu as $beasiswa) {
+                        $escaped = preg_quote($beasiswa, '/');
+                        $q->orWhere('beasiswa_name', 'regex', "/{$escaped}/i");
+                    }
+                })
+                ->count();
+        }
+        $mentor->students_passed = $passedCount;
 
-        // Upcoming tasks (close deadlines)
-        $upcomingTasks = $paketIds
-            ? $this->taskRepo->findUpcomingByClassIds($paketIds, 3)->all()
+
+        // ── Upcoming Tasks ────────────────────────────────────────────────
+        $upcomingTasks = ! empty($beasiswaDiampu)
+            ? $this->taskRepo->findUpcomingByBeasiswa($beasiswaDiampu, 5)->all()
             : [];
 
-        // Upcoming mentoring sessions
-        $upcomingSessions = $paketIds
-            ? $this->mentoringRepo->findUpcomingByClassIds($paketIds, 3)->all()
+        // ── Upcoming Mentoring Sessions ───────────────────────────────────
+        $upcomingSessions = ! empty($beasiswaDiampu)
+            ? $this->mentoringRepo->findUpcomingByBeasiswa($beasiswaDiampu, 5)->all()
             : [];
 
+        // Merge & sort by date, limiting each to 2 to ensure both show up in UI
         $upcomingActivities = collect($upcomingTasks)
+            ->take(2)
             ->map(fn ($t) => [
                 'type'  => 'task',
                 'id'    => (string) $t->_id,
                 'title' => $t->title,
-                'date'  => $t->deadline_date?->toDateString(),
+                'date'  => $t->deadline_date,
             ])
             ->merge(
-                collect($upcomingSessions)->map(fn ($s) => [
+                collect($upcomingSessions)->take(2)->map(fn ($s) => [
                     'type'  => 'mentoring',
                     'id'    => (string) $s->_id,
                     'title' => $s->title,
-                    'date'  => $s->session_date?->toDateString(),
+                    'date'  => $s->session_date,
                     'link'  => $s->link,
                 ])
             )
@@ -63,33 +96,71 @@ class MentorDashboardService
             ->values()
             ->all();
 
-        // ── Students: match by beasiswa_diampu overlap ──────────────────
-        // Find all student-role users who have AT LEAST ONE beasiswa in common
-        // with this mentor's beasiswa_diampu list.
+        // ── Students: match by beasiswa_diampu ───────────────────────────
         $students = [];
 
         if (! empty($beasiswaDiampu)) {
-            // MongoDB: whereIn on an array field checks if the array field contains
-            // any of the given values (equivalent to { beasiswa_diampu: { $in: [...] } })
-            $matchedStudents = User::where('role', 'student')
-                ->whereIn('beasiswa_diampu', $beasiswaDiampu)
+            $allStudents = User::where('role', UserRole::Student->value)
+                ->where(function ($q) use ($beasiswaDiampu) {
+                    foreach ($beasiswaDiampu as $beasiswa) {
+                        $escaped = preg_quote($beasiswa, '/');
+                        $q->orWhere('beasiswa_diampu', 'regex', "/{$escaped}/i");
+                    }
+                })
                 ->get();
 
-            foreach ($matchedStudents as $student) {
-                // Determine which paket labels to show (intersection)
-                $studentBeasiswa = $student->beasiswa_diampu ?? [];
-                $sharedBeasiswa  = array_values(array_intersect($beasiswaDiampu, $studentBeasiswa));
-                $paketLabel      = implode(', ', $sharedBeasiswa);
+            foreach ($allStudents as $student) {
+                $studentBeasiswa = $this->normalizeArray($student->beasiswa_diampu ?? []);
 
-                // Progress is stored on the user after each submission
-                $progress = $student->progress_percentage ?? 0;
+                if (empty($studentBeasiswa) && is_string($student->beasiswa_diampu)) {
+                    foreach ($beasiswaDiampu as $beasiswa) {
+                        if (str_contains($student->beasiswa_diampu, $beasiswa)) {
+                            $studentBeasiswa[] = $beasiswa;
+                        }
+                    }
+                }
+
+                $sharedBeasiswa = array_values(array_intersect($beasiswaDiampu, $studentBeasiswa));
+
+                if (empty($sharedBeasiswa)) {
+                    $sharedBeasiswa = $beasiswaDiampu; // at least one matched
+                }
+
+                // Calculate Fase Percentage for Donut Bar
+                $fasePercentage = 0;
+                $faseCompletedTotal = 0;
+                $faseTotalItems = 0;
+                
+                $pakets = PaketBeasiswa::where(function($q) use ($sharedBeasiswa) {
+                    foreach ($sharedBeasiswa as $b) {
+                        $q->orWhere('nama_beasiswa', 'regex', "/".preg_quote($b, '/')."/i");
+                    }
+                })->get();
+
+                foreach ($pakets as $paket) {
+                    $rawFase = $paket->fase_checkpoint ?? '[]';
+                    $faseParsed = $this->normalizeArray($rawFase);
+                    $faseTotalItems += count($faseParsed);
+                    
+                    $faseCompletedTotal += \App\Models\CheckpointSubmission::where('student_id', (string) $student->_id)
+                        ->where(function($q) use ($paket) {
+                            $q->where('paket_beasiswa', $paket->nama_beasiswa)
+                              ->orWhere('class_id', (string) $paket->_id);
+                        })->count();
+                }
+
+                if ($faseTotalItems > 0) {
+                    $fasePercentage = (int) round(($faseCompletedTotal / $faseTotalItems) * 100);
+                } else {
+                    $fasePercentage = $student->progress_percentage ?? 0;
+                }
 
                 $students[] = [
                     'student_id'      => (string) $student->_id,
                     'name'            => $student->name,
-                    'profile_picture' => $student->profile_picture,
-                    'paket'           => $paketLabel,
-                    'progress'        => $progress,
+                    'profile_picture' => \App\Http\Resources\UserResource::resolveUrl($student->profile_picture),
+                    'paket'           => implode(', ', $sharedBeasiswa),
+                    'progress'        => $fasePercentage,
                     'university'      => $student->university ?? '',
                 ];
             }
@@ -103,9 +174,10 @@ class MentorDashboardService
     }
 
     /**
-     * Grade a task submission.
+     * Mentor sends feedback/ulasan — sets status to 'reviewed'.
+     * Student can still resubmit after this.
      */
-    public function gradeSubmission(string $submissionId, array $data): mixed
+    public function reviewSubmission(string $submissionId, array $data): mixed
     {
         $submission = $this->submissionRepo->findById($submissionId);
 
@@ -114,11 +186,38 @@ class MentorDashboardService
         }
 
         $this->submissionRepo->update($submission, [
-            'score'    => $data['score'],
             'feedback' => $data['feedback'] ?? null,
-            'status'   => SubmissionStatus::Graded->value,
+            'status'   => SubmissionStatus::Reviewed->value,
         ]);
 
         return $submission->fresh();
+    }
+
+    /**
+     * Mentor marks submission as complete (graded/done).
+     * After this, student cannot resubmit.
+     */
+    public function completeSubmission(string $submissionId): mixed
+    {
+        $submission = $this->submissionRepo->findById($submissionId);
+
+        if (! $submission) {
+            return null;
+        }
+
+        $this->submissionRepo->update($submission, [
+            'status'       => SubmissionStatus::Graded->value,
+            'is_completed' => true,
+        ]);
+
+        return $submission->fresh();
+    }
+
+    /**
+     * Grade a task submission (legacy — kept for backward compat).
+     */
+    public function gradeSubmission(string $submissionId, array $data): mixed
+    {
+        return $this->reviewSubmission($submissionId, $data);
     }
 }

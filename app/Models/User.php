@@ -33,6 +33,11 @@ class User extends Model implements \Illuminate\Contracts\Auth\Authenticatable
         'students_passed',
         'beasiswa_diampu',
         'progress_percentage',
+        // Graduation flow
+        'graduation_proof_url',
+        'graduation_status',      // null | 'pending' | 'lulus' | 'gagal'
+        'graduation_notified',    // bool: false = belum popup
+        'graduated_beasiswa',     // nama beasiswa yg sudah lulus (untuk popup)
     ];
 
     protected $hidden = [

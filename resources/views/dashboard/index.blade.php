@@ -57,7 +57,8 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(242, 188, 69, 0.15), rgba(245, 158, 11, 0.15)); color: #D97706;">
+            <div class="stat-icon"
+                style="background: linear-gradient(135deg, rgba(242, 188, 69, 0.15), rgba(245, 158, 11, 0.15)); color: #D97706;">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
@@ -68,7 +69,8 @@
                 <div class="stat-value" style="display: flex; align-items: center; gap: 8px;">
                     {{ $totalTestimoni ?? 0 }}
                     @if(($pendingTestimoni ?? 0) > 0)
-                        <span style="background: #FFF8E7; color: #B8860B; font-size: 12px; padding: 2px 10px; border-radius: 20px; font-weight: 600;">
+                        <span
+                            style="background: #FFF8E7; color: #B8860B; font-size: 12px; padding: 2px 10px; border-radius: 20px; font-weight: 600;">
                             {{ $pendingTestimoni }} pending
                         </span>
                     @endif
@@ -121,39 +123,30 @@
                 <canvas id="topBeasiswaChart"></canvas>
             </div>
         </div>
-        <!-- ============================================== -->
 
         <!-- ============================================== -->
-        <!-- CHART 3: MENTOR VS PESERTA (PIE CHART)     -->
+        <!-- CHART 3: MENTOR VS PESERTA (DOUGHNUT)      -->
         <!-- ============================================== -->
         <div class="chart-card dashboard-chart" id="chart3"
             style="background: white; padding: 24px; border-radius: 24px; box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.15);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <div style="color: #132440; font-size: 18px; font-family: 'Poppins', sans-serif; font-weight: 500;">Mentor
-                    vs Peserta</div>
-                <select id="filterPieFormat"
-                    style="padding: 4px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: white; cursor: pointer;">
-                    <option value="angka">Angka (Raw)</option>
-                    <option value="persen">Persentase (%)</option>
-                </select>
+                <div style="color: #132440; font-size: 18px; font-family: 'Poppins', sans-serif; font-weight: 500;">Mentor vs Peserta</div>
             </div>
             <div style="position: relative; height: 300px; width: 100%; display: flex; justify-content: center;">
                 <canvas id="mentorVsPesertaChart"></canvas>
             </div>
         </div>
+
+        <!-- ============================================== -->
+        <!-- CHART 4: STATUS TRANSAKSI (DOUGHNUT)       -->
+        <!-- ============================================== -->
         <div class="chart-card dashboard-chart" id="chart4"
             style="background: white; padding: 24px; border-radius: 24px; box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.15);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <div style="color: #132440; font-size: 18px; font-family: 'Poppins', sans-serif; font-weight: 500;">
-                    Perbandingan Pendapatan</div>
-                <select id="filterPendapatan"
-                    style="padding: 4px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; background: white; cursor: pointer;">
-                    <option value="yearly">Per Tahun</option>
-                    <option value="monthly">Per Bulan</option>
-                </select>
+                <div style="color: #132440; font-size: 18px; font-family: 'Poppins', sans-serif; font-weight: 500;">Status Transaksi</div>
             </div>
-            <div style="position: relative; height: 300px; width: 100%;">
-                <canvas id="totalPendapatanChart"></canvas>
+            <div style="position: relative; height: 300px; width: 100%; display: flex; justify-content: center;">
+                <canvas id="statusTransaksiChart"></canvas>
             </div>
         </div>
         <!-- ============================================== -->
@@ -288,9 +281,10 @@
                 loadTopBeasiswa(e.target.value);
             });
 
+
             // 3. Mentor vs Peserta (Interactive)
             let mentorVsPesertaChartInstance = null;
-            const loadMentorVsPeserta = (formatValue = 'angka') => {
+            const loadMentorVsPeserta = () => {
                 fetchChartData('mentor-vs-peserta').then(res => {
                     const ctx = document.getElementById('mentorVsPesertaChart').getContext('2d');
                     if (mentorVsPesertaChartInstance) {
@@ -316,87 +310,49 @@
                                 legend: {
                                     position: 'bottom',
                                     labels: { font: { family: "'Inter', sans-serif", size: 12 }, usePointStyle: true, boxWidth: 10 }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            let label = context.label || '';
-                                            let value = context.raw || 0;
-                                            if (formatValue === 'persen') {
-                                                let sum = 0;
-                                                let dataArr = context.chart.data.datasets[0].data;
-                                                dataArr.map(data => { sum += data; });
-                                                let percentage = ((value * 100) / sum).toFixed(2) + '%';
-                                                return `${label}: ${percentage}`;
-                                            }
-                                            return `${label}: ${value}`;
-                                        }
-                                    }
                                 }
                             }
                         }
                     });
                 });
             };
-
             loadMentorVsPeserta();
 
-            document.getElementById('filterPieFormat').addEventListener('change', (e) => {
-                loadMentorVsPeserta(e.target.value);
-            });
-
-            // 4. Perbandingan Pendapatan (Area Chart - Interactive)
-            let totalPendapatanChartInstance = null;
-            const loadTotalPendapatan = (filterValue = 'yearly') => {
-                fetchChartData(`total-pendapatan?filter=${filterValue}`).then(res => {
-                    const ctx = document.getElementById('totalPendapatanChart').getContext('2d');
-                    if (totalPendapatanChartInstance) {
-                        totalPendapatanChartInstance.destroy();
+            // 4. Status Transaksi (Doughnut)
+            let statusTransaksiChartInstance = null;
+            const loadStatusTransaksi = () => {
+                fetchChartData('status-transaksi').then(res => {
+                    const ctx = document.getElementById('statusTransaksiChart').getContext('2d');
+                    if (statusTransaksiChartInstance) {
+                        statusTransaksiChartInstance.destroy();
                     }
 
-                    // Append fill property to datasets for Area Chart effect
-                    res.datasets.forEach(dataset => {
-                        dataset.fill = true;
-                        dataset.borderWidth = 2;
-                        dataset.tension = 0.4;
-                        dataset.pointBackgroundColor = dataset.borderColor;
-                        dataset.pointBorderColor = '#fff';
-                        dataset.pointBorderWidth = 1;
-                        dataset.pointRadius = 4;
-                    });
-
-                    totalPendapatanChartInstance = new Chart(ctx, {
-                        type: 'line',
+                    statusTransaksiChartInstance = new Chart(ctx, {
+                        type: 'doughnut',
                         data: {
                             labels: res.labels,
-                            datasets: res.datasets
+                            datasets: [{
+                                data: res.data,
+                                backgroundColor: res.backgroundColor,
+                                borderWidth: 0,
+                                hoverOffset: 4
+                            }]
                         },
                         options: {
-                            ...commonOptions,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { drawBorder: false },
-                                    ticks: {
-                                        callback: function (value) {
-                                            return value >= 1000 ? (value / 1000) + 'k' : value;
-                                        }
-                                    }
-                                },
-                                x: { grid: { display: false } }
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { font: { family: "'Inter', sans-serif", size: 12 }, usePointStyle: true, boxWidth: 10 }
+                                }
                             }
                         }
                     });
                 });
             };
-
-            // Load initially
-            loadTotalPendapatan();
-
-            // Listen for filter changes
-            document.getElementById('filterPendapatan').addEventListener('change', (e) => {
-                loadTotalPendapatan(e.target.value);
-            });
+            loadStatusTransaksi();
 
         });
     </script>

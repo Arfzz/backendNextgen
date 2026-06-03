@@ -25,7 +25,7 @@ class TestimonialController extends Controller
             $query->where('status', $request->status);
         }
 
-        $testimonials = $query->orderBy('created_at', 'desc')->get();
+        $testimonials = $query->orderBy('created_at', 'desc')->paginate(20);
 
         // Eager-load related data manually (MongoDB)
         $testimonials->each(function ($testimonial) {

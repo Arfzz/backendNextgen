@@ -17,9 +17,9 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
             </span>
-            <form action="{{ route('paket-beasiswa.index') }}" method="GET">
+            <form action="{{ route('paket-beasiswa.index') }}" method="GET" x-data="{ search: '{{ $search ?? '' }}' }">
                 <input type="text" name="search" id="search-input" placeholder="Cari paket beasiswa..."
-                    value="{{ $search ?? '' }}">
+                    x-model="search" @input.debounce.500ms="$el.form.submit()">
             </form>
         </div>
         <a href="{{ route('paket-beasiswa.create') }}" class="btn btn-primary" id="btn-tambah">
@@ -102,6 +102,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($paketBeasiswas->hasPages())
+            <div style="padding:16px 24px;border-top:1px solid #F1F5F9;">
+                {{ $paketBeasiswas->withQueryString()->links() }}
+            </div>
+            @endif
         @else
             <div class="empty-state">
                 <div class="empty-icon">📋</div>

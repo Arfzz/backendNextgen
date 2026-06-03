@@ -26,8 +26,8 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
             </span>
-            <form action="{{ route('users.index') }}" method="GET">
-                <input type="text" name="search" id="search-input" placeholder="Cari pengguna..." value="{{ request('search') }}">
+            <form action="{{ route('users.index') }}" method="GET" x-data="{ search: '{{ request('search') }}' }">
+                <input type="text" name="search" id="search-input" x-model="search" @input.debounce.500ms="$el.form.submit()" placeholder="Cari pengguna...">
             </form>
         </div>
         <button type="button" class="btn btn-primary" id="btn-tambah" onclick="openCreateModal()">
@@ -47,6 +47,7 @@
                     <thead>
                         <tr>
                             <th>No</th>
+                            <th>Profil</th>
                             <th>Nama</th>
                             <th>Email</th>
                             <th>Role</th>
@@ -68,6 +69,15 @@
                             @endphp
                             <tr>
                                 <td>{{ $index + 1 }}</td>
+                                <td>
+                                    @if($user->profile_picture)
+                                        <img src="{{ Str::startsWith($user->profile_picture, ['http://', 'https://']) ? $user->profile_picture : Storage::url($user->profile_picture) }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    @else
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; color: #64748B; font-weight: bold;">
+                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                </td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>
@@ -112,6 +122,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($users->hasPages())
+            <div style="padding:16px 24px;border-top:1px solid #F1F5F9;">
+                {{ $users->withQueryString()->links() }}
+            </div>
+            @endif
         @else
             <div class="empty-state">
                 <div class="empty-icon">👥</div>
@@ -135,11 +151,15 @@
                 <h3 style="margin:0; font-size: 24px; color: #0F172A; font-weight: 700;">Tambah Pengguna</h3>
                 <button type="button" onclick="closeCreateModal()" style="background: transparent; border:none; font-size: 24px; cursor: pointer; color: #64748B;">&times;</button>
             </div>
-            <form action="{{ route('users.store') }}" method="POST">
+            <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label>Nama Lengkap</label>
                     <input type="text" name="name" class="form-control" required style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Profile Picture</label>
+                    <input type="file" name="profile_picture" class="form-control" accept="image/*" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label>Email</label>
@@ -176,7 +196,7 @@
                 <h3 style="margin:0; font-size: 24px; color: #0F172A; font-weight: 700;">Edit Pengguna</h3>
                 <button type="button" onclick="closeEditModal()" style="background: transparent; border:none; font-size: 24px; cursor: pointer; color: #64748B;">&times;</button>
             </div>
-            <form id="edit-form" method="POST">
+            <form id="edit-form" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -184,6 +204,10 @@
                     <label>Nama Lengkap</label>
                     <input type="text" name="name" id="edit_name" class="form-control" required
                         style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Profile Picture (Biarkan kosong jika tidak diubah)</label>
+                    <input type="file" name="profile_picture" class="form-control" accept="image/*" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label>Email</label>

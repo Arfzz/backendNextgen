@@ -21,11 +21,15 @@ class TaskSubmission extends Model
         'score',
         'feedback',
         'submitted_at',
+        'revision_history',  // array of {file_url, submitted_at, feedback}
+        'is_completed',      // true = graded/done, false = can still revise
     ];
 
     protected $casts = [
-        'status'       => SubmissionStatus::class,
-        'score'        => 'integer',
-        'submitted_at' => 'datetime',
+        'status'           => SubmissionStatus::class,
+        'score'            => 'integer',
+        'submitted_at'     => 'datetime',
+        'revision_history' => 'array',
+        'is_completed'     => 'boolean',
     ];
 }

@@ -13,7 +13,7 @@ class MentoringSessionResource extends JsonResource
             'id'           => (string) $this->_id,
             'class_id'     => (string) $this->class_id,
             'title'        => $this->title,
-            'session_date' => $this->session_date?->toIso8601String(),
+            'session_date' => $this->session_date,
             'link'         => $this->link,
         ];
     }

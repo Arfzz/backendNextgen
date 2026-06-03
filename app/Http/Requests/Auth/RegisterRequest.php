@@ -14,10 +14,20 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'       => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'unique:pjblNextgen.users,email'],
-            'password'   => ['required', 'string', 'min:8', 'confirmed'],
-            'university' => ['nullable', 'string', 'max:255'],
+            'name'             => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                function ($attribute, $value, $fail) {
+                    if (\App\Models\User::where('email', $value)->exists() || \App\Models\Mentor::where('email', $value)->exists()) {
+                        $fail('Email sudah terdaftar. Silakan gunakan email lain.');
+                    }
+                },
+            ],
+            'password'         => ['required', 'string', 'min:8', 'confirmed'],
+            'university'       => ['nullable', 'string', 'max:255'],
+            'beasiswa_diampu'  => ['nullable', 'array'],
+            'beasiswa_diampu.*'=> ['string'],
         ];
     }
 }

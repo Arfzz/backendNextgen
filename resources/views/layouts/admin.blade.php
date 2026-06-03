@@ -78,6 +78,17 @@
                     </span>
                     <span>Testimoni</span>
                 </a>
+                <a href="{{ route('orders.index') }}"
+                    class="nav-item {{ request()->is('orders*') ? 'active' : '' }}">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2" />
+                            <line x1="2" y1="10" x2="22" y2="10" />
+                        </svg>
+                    </span>
+                    <span>Pembayaran</span>
+                </a>
                 <a href="{{ route('users.index') }}" class="nav-item {{ request()->is('users*') ? 'active' : '' }}">
                     <span class="nav-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -113,20 +124,20 @@
         <main class="main-content">
             {{-- Topbar --}}
             <header class="topbar">
-                <button class="topbar-notification" id="notif-btn" title="Notifikasi">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 01-3.46 0" />
-                    </svg>
-                    <span class="notif-badge"></span>
-                </button>
-                <div class="topbar-profile">
+
+                <div class="topbar-profile" style="gap:10px;">
                     <div class="profile-info">
-                        <div class="profile-name" style="text-align: left;">{{ Auth::user()->name ?? 'Admin' }}</div>
-                        <div class="profile-role" style="text-align: left;">NextGen Community</div>
+                        <div class="profile-name" style="text-align: left; font-size: 15px; font-weight: 600;">{{ Auth::user()->name ?? 'Admin' }}</div>
+                        <div class="profile-role" style="text-align: left; font-size: 12px; color: #64748B;">NextGen Community</div>
                     </div>
-                    <img src="{{ asset('images/avatar.png') }}" alt="Admin" class="profile-avatar">
+                    @php
+                        $userProfile = Auth::user()?->profile_picture;
+                    @endphp
+                    @if($userProfile)
+                        <img src="{{ Str::startsWith($userProfile, ['http://', 'https://']) ? $userProfile : Storage::url($userProfile) }}" alt="Admin" class="profile-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; outline: none;">
+                    @else
+                        <img src="{{ asset('images/avatar.png') }}" alt="Admin" class="profile-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; outline: none;">
+                    @endif
                 </div>
             </header>
 
@@ -149,6 +160,8 @@
     </div>
 
     @yield('scripts')
+    <!-- Alpine.js for realtime search -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 
 </html>

@@ -42,4 +42,22 @@ class MentoringSessionRepository
             ->limit($limit)
             ->get();
     }
+
+    /**
+     * Query by paket_beasiswa names (string array matching beasiswa_diampu).
+     */
+    public function findUpcomingByBeasiswa(array $beasiswaNames, int $limit = 5): Collection
+    {
+        return MentoringSession::whereIn('paket_beasiswa', $beasiswaNames)
+            ->orderBy('session_date')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function findByBeasiswa(array $beasiswaNames): Collection
+    {
+        return MentoringSession::whereIn('paket_beasiswa', $beasiswaNames)
+            ->orderBy('session_date')
+            ->get();
+    }
 }

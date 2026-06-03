@@ -29,6 +29,21 @@ class DocumentController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, string $documentId): JsonResponse
+    {
+        $validated = $request->validate(['title' => 'required|string|max:255']);
+        $doc = Document::find($documentId);
+        if (! $doc) {
+            return response()->json(['message' => 'Document not found.'], 404);
+        }
+        $doc->title = $validated['title'];
+        $doc->save();
+        return response()->json([
+            'message'  => 'Document updated.',
+            'document' => new DocumentResource($doc),
+        ]);
+    }
+
     public function destroy(string $documentId): JsonResponse
     {
         $deleted = $this->service->deleteDocument($documentId);

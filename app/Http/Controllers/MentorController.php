@@ -21,7 +21,7 @@ class MentorController extends Controller
             $query->where('nama_mentor', 'regexp', '/' . preg_quote($request->search) . '/i');
         }
 
-        $mentors = $query->get();
+        $mentors = $query->paginate(20);
         $search = $request->search;
         $paketBeasiswa = PaketBeasiswa::orderBy('nama_beasiswa')->get(['nama_beasiswa']);
 

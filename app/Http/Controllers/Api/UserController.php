@@ -33,7 +33,15 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:pjblNextgen.users,email',
+            'email'      => [
+                'required',
+                'email',
+                function ($attribute, $value, $fail) {
+                    if (\App\Models\User::where('email', $value)->exists() || \App\Models\Mentor::where('email', $value)->exists()) {
+                        $fail('Email sudah terdaftar. Silakan gunakan email lain.');
+                    }
+                },
+            ],
             'password'   => 'required|string|min:8',
             'role'       => ['required', 'string', Rule::in(['student', 'admin', 'mentor'])],
             'university' => 'nullable|string|max:255',
@@ -87,7 +95,15 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name'       => 'sometimes|string|max:255',
-            'email'      => ['sometimes', 'email', Rule::unique('pjblNextgen.users', 'email')->ignore($user->_id, '_id')],
+            'email'      => [
+                'sometimes',
+                'email',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (\App\Models\User::where('email', $value)->where('_id', '!=', $user->_id)->exists() || \App\Models\Mentor::where('email', $value)->exists()) {
+                        $fail('Email sudah terdaftar. Silakan gunakan email lain.');
+                    }
+                },
+            ],
             'password'   => 'sometimes|string|min:8',
             'role'       => ['sometimes', 'string', Rule::in(['student', 'admin', 'mentor'])],
             'university' => 'nullable|string|max:255',

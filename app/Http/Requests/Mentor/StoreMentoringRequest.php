@@ -12,8 +12,8 @@ class StoreMentoringRequest extends FormRequest
     {
         return [
             'title'        => ['required', 'string', 'max:255'],
-            'session_date' => ['required', 'date', 'after:now'],
-            'link'         => ['nullable', 'url'],
+            'session_date' => ['required', 'string'],
+            'link'         => ['nullable', 'string'],
         ];
     }
 }

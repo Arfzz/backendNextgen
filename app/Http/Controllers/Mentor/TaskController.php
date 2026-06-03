@@ -8,6 +8,7 @@ use App\Http\Requests\Mentor\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Http\Resources\TaskSubmissionResource;
 use App\Services\MentorContentService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,17 @@ class TaskController extends Controller
 
     public function store(StoreTaskRequest $request, string $classId): JsonResponse
     {
-        $task = $this->service->createTask($classId, $request->user(), $request->validated());
+        $task = $this->service->createTask($classId, $request->user(), $request->validated(), $request);
+
+        // Notify all enrolled students — resolves via PaketBeasiswa → User.beasiswa_diampu
+        try {
+            NotificationService::broadcastNewTask(
+                $classId,
+                $task->title ?? 'Tugas Baru',
+                (string) $task->_id
+            );
+        } catch (\Throwable) {}
+
         return response()->json(['message' => 'Task created.', 'task' => new TaskResource($task)], 201);
     }
 

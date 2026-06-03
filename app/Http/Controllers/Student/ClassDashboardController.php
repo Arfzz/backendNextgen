@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CheckpointResource;
-use App\Http\Resources\ClassMemberResource;
 use App\Http\Resources\DocumentResource;
 use App\Http\Resources\MentoringSessionResource;
 use App\Http\Resources\TaskResource;
@@ -21,17 +20,21 @@ class ClassDashboardController extends Controller
         $data = $this->service->classDashboard($request->user());
 
         if (! ($data['enrolled'] ?? false)) {
-            return response()->json(['message' => 'You are not enrolled in any active class.'], 404);
+            return response()->json(['message' => 'Kamu belum terdaftar di paket beasiswa manapun.'], 404);
         }
 
         return response()->json([
-            'membership'         => new ClassMemberResource($data['membership']),
-            'package_info'       => $data['package_info'],
-            'checkpoints'        => CheckpointResource::collection($data['checkpoints']),
-            'tasks_summary'      => $data['tasks_summary'],
-            'tasks'              => TaskResource::collection($data['tasks']),
-            'mentoring_sessions' => MentoringSessionResource::collection($data['mentoring_sessions']),
-            'documents'          => DocumentResource::collection($data['documents']),
+            // membership is now a plain array (no ClassMember model)
+            'membership'                  => $data['membership'],
+            'package_info'                => $data['package_info'],
+            'checkpoints'                 => $data['checkpoints'],
+            'tasks_summary'               => $data['tasks_summary'],
+            'tasks'                       => TaskResource::collection($data['tasks']),
+            'mentoring_sessions'          => MentoringSessionResource::collection($data['mentoring_sessions']),
+            'documents'                   => DocumentResource::collection($data['documents']),
+            'all_checkpoints_completed'   => $data['all_checkpoints_completed'] ?? false,
+            'mentor_id'                   => $data['mentor_id'] ?? null,
+            'graduation_status'           => $data['graduation_status'] ?? null,
         ]);
     }
 }

@@ -42,9 +42,9 @@ class TaskSubmissionRepository
             return 0;
         }
 
-        // Step 2: count how many of those tasks have been submitted/graded by the student
+        // Step 2: count how many of those tasks have been submitted/reviewed/graded by the student
         return TaskSubmission::where('student_id', $studentId)
-            ->whereIn('status', ['submitted', 'graded'])
+            ->whereIn('status', ['submitted', 'reviewed', 'graded'])
             ->whereIn('task_id', $taskIds)
             ->count();
     }

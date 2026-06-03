@@ -26,9 +26,9 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
             </span>
-            <form action="{{ route('mentor.index') }}" method="GET">
+            <form action="{{ route('mentor.index') }}" method="GET" x-data="{ search: '{{ $search ?? '' }}' }">
                 <input type="text" name="search" id="search-input" placeholder="Cari mentor..."
-                    value="{{ $search ?? '' }}">
+                    x-model="search" @input.debounce.500ms="$el.form.submit()">
             </form>
         </div>
         <button type="button" class="btn btn-primary" id="btn-tambah" onclick="openCreateModal()">
@@ -88,6 +88,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($mentors->hasPages())
+            <div style="padding:16px 24px;border-top:1px solid #F1F5F9;">
+                {{ $mentors->withQueryString()->links() }}
+            </div>
+            @endif
         @else
             <div class="empty-state">
                 <div class="empty-icon">👥</div>

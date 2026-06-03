@@ -22,6 +22,10 @@ class HomeController extends Controller
         return response()->json([
             'user'                => new UserResource($data['user']),
             'global_progress'     => $data['global_progress'],
+            'task_completed'      => $data['task_completed'] ?? 0,
+            'task_total'          => $data['task_total'] ?? 0,
+            'fase_percentage'     => $data['fase_percentage'] ?? 0,
+            'days_left'           => $data['days_left'] ?? 0,
             'upcoming_activities' => $data['upcoming_activities'],
             'articles'            => ArticleResource::collection($data['articles']),
             'packages'            => PackageResource::collection($data['packages']),

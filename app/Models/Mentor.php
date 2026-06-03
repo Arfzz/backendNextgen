@@ -35,6 +35,14 @@ class Mentor extends Model implements AuthenticatableContract
         return 'mentor';
     }
 
+    /**
+     * Virtual 'name' attribute — maps nama_mentor → name for uniform access.
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->attributes['nama_mentor'] ?? $this->attributes['name'] ?? 'Mentor';
+    }
+
     protected $hidden = [
         'password',
     ];

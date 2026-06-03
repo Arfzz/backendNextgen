@@ -7,6 +7,7 @@ use App\Http\Requests\Mentor\StoreMentoringRequest;
 use App\Http\Resources\MentoringSessionResource;
 use App\Models\MentoringSession;
 use App\Services\MentorContentService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,21 @@ class MentoringController extends Controller
 
     public function store(StoreMentoringRequest $request, string $classId): JsonResponse
     {
-        $session = $this->service->createMentoringSession($classId, $request->validated());
+        $session = $this->service->createMentoringSession(
+            $classId,
+            $request->user(),
+            $request->validated()
+        );
+
+        // Notify all enrolled students — resolves via PaketBeasiswa → User.beasiswa_diampu
+        try {
+            NotificationService::broadcastNewMentoring(
+                $classId,
+                $session->title ?? 'Sesi Mentoring',
+                $session->session_date ?? '',
+                (string) $session->_id
+            );
+        } catch (\Throwable) {}
 
         return response()->json([
             'message' => 'Mentoring session created.',

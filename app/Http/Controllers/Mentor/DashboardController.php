@@ -14,12 +14,13 @@ class DashboardController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $data = $this->service->dashboard($request->user());
+        $mentor = $request->user();
+        $data   = $this->service->dashboard($mentor);
 
         return response()->json([
             'mentor_profile'      => new MentorResource($data['mentor_profile']),
             'upcoming_activities' => $data['upcoming_activities'],
-            'students'            => $data['students'], // already plain array from service
+            'students'            => $data['students'],
         ]);
     }
 }

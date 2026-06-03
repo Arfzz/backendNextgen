@@ -21,7 +21,7 @@ class PaketBeasiswaController extends Controller
             $query->where('nama_beasiswa', 'like', '%' . $search . '%');
         }
 
-        $paketBeasiswas = $query->orderBy('created_at', 'desc')->get();
+        $paketBeasiswas = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return view('paket-beasiswa.index', compact('paketBeasiswas', 'search'));
     }

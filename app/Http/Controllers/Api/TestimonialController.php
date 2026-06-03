@@ -32,15 +32,16 @@ class TestimonialController extends Controller
 
         // Attach related data
         $testimonials->each(function ($testimonial) {
-            $testimonial->user_name     = optional($testimonial->user)->name ?? 'Anonymous';
-            $testimonial->mentor_name   = optional($testimonial->mentor)->nama_mentor ?? '-';
-            $testimonial->paket_name    = optional($testimonial->paketBeasiswa)->nama_beasiswa ?? '-';
+            $testimonial->user_name = optional($testimonial->user)->name ?? 'Anonymous';
+            $testimonial->user_profile_picture = optional($testimonial->user)->profile_picture ?? null;
+            $testimonial->mentor_name = optional($testimonial->mentor)->nama_mentor ?? '-';
+            $testimonial->paket_name = optional($testimonial->paketBeasiswa)->nama_beasiswa ?? '-';
         });
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar testimoni',
-            'data'    => $testimonials,
+            'data' => $testimonials,
         ], 200);
     }
 
@@ -50,23 +51,23 @@ class TestimonialController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id'           => 'required|string',
+            'user_id' => 'required|string',
             'paket_beasiswa_id' => 'required|string',
-            'mentor_id'         => 'required|string',
-            'content'           => 'required|string|min:10|max:1000',
-            'rating'            => 'required|numeric|min:1|max:5',
+            'mentor_id' => 'required|string',
+            'content' => 'required|string|min:10|max:1000',
+            'rating' => 'required|numeric|min:1|max:5',
         ]);
 
-        $validated['status']      = 'pending';
+        $validated['status'] = 'pending';
         $validated['show_mobile'] = false;
-        $validated['show_web']    = false;
+        $validated['show_web'] = false;
 
         $testimonial = Testimonial::create($validated);
 
         return response()->json([
             'success' => true,
             'message' => 'Testimoni berhasil dikirim! Terima kasih atas ulasan Anda.',
-            'data'    => $testimonial,
+            'data' => $testimonial,
         ], 201);
     }
 
@@ -94,15 +95,15 @@ class TestimonialController extends Controller
         });
 
         $totalReviews = $testimonials->count();
-        $avgRating    = $totalReviews > 0 ? round($testimonials->avg('rating'), 1) : ($mentor->rating ?? 5.0);
+        $avgRating = $totalReviews > 0 ? round($testimonials->avg('rating'), 1) : ($mentor->rating ?? 5.0);
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'mentor'        => $mentor,
+            'data' => [
+                'mentor' => $mentor,
                 'average_rating' => $avgRating,
-                'total_reviews'  => $totalReviews,
-                'testimonials'   => $testimonials,
+                'total_reviews' => $totalReviews,
+                'testimonials' => $testimonials,
             ],
         ], 200);
     }

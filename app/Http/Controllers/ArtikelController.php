@@ -19,7 +19,7 @@ class ArtikelController extends Controller
             $query->where('judul_artikel', 'regexp', '/' . preg_quote($request->search) . '/i');
         }
 
-        $artikels = $query->get();
+        $artikels = $query->paginate(20);
         $search = $request->search;
 
         return view('artikel.index', compact('artikels', 'search'));

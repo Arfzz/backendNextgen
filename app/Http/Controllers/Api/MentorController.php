@@ -32,7 +32,19 @@ class MentorController extends Controller
             'pendidikan'  => 'required|string|max:255',
             'awardee'     => 'required|string|max:255',
             'rating'      => 'required|numeric|min:0|max:5',
+            'email'       => [
+                'required',
+                'email',
+                function ($attribute, $value, $fail) {
+                    if (\App\Models\User::where('email', $value)->exists() || \App\Models\Mentor::where('email', $value)->exists()) {
+                        $fail('Email sudah terdaftar. Silakan gunakan email lain.');
+                    }
+                },
+            ],
+            'password'    => 'required|string|min:8',
         ]);
+
+        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
 
         $mentor = Mentor::create($validated);
 
@@ -101,7 +113,21 @@ class MentorController extends Controller
             'pendidikan'  => 'required|string|max:255',
             'awardee'     => 'required|string|max:255',
             'rating'      => 'required|numeric|min:0|max:5',
+            'email'       => [
+                'sometimes',
+                'email',
+                function ($attribute, $value, $fail) use ($mentor) {
+                    if (\App\Models\User::where('email', $value)->exists() || \App\Models\Mentor::where('email', $value)->where('_id', '!=', $mentor->_id)->exists()) {
+                        $fail('Email sudah terdaftar. Silakan gunakan email lain.');
+                    }
+                },
+            ],
+            'password'    => 'sometimes|string|min:8',
         ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        }
 
         $mentor->update($validated);
 

@@ -182,7 +182,7 @@ a {
 
 /* --- Topbar --- */
 .topbar {
-    height: 100px;
+    height: 80px;
     background: var(--bg-card);
     display: flex;
     align-items: center;
@@ -265,7 +265,7 @@ a {
 
 /* --- Content Area --- */
 .content-area {
-    padding: 136px 36px 36px 36px;
+    padding: 100px 36px 36px 36px;
 }
 
 .data-card {

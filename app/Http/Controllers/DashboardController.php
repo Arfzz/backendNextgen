@@ -16,16 +16,16 @@ class DashboardController extends Controller
     public function index()
     {
         // Fetch real data metrics
-        $totalBeasiswa   = PaketBeasiswa::count();
-        $totalMentor     = Mentor::count();
-        $totalArtikel    = Artikel::count();
-        $totalTestimoni  = Testimonial::count();
+        $totalBeasiswa = PaketBeasiswa::count();
+        $totalMentor = Mentor::count();
+        $totalArtikel = Artikel::count();
+        $totalTestimoni = Testimonial::count();
         $pendingTestimoni = Testimonial::where('status', 'pending')->count();
 
         // Create Mock data for the 'Revenue Per Bulan' Chart
         $chartData = [
             'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-            'data'   => [5000, 10000, 7500, 15000, 20000, 18000, 25000, 22000, 30000, 28000, 35000, 45000]
+            'data' => [5000, 10000, 7500, 15000, 20000, 18000, 25000, 22000, 30000, 28000, 35000, 45000]
         ];
 
         return view('dashboard.index', compact(

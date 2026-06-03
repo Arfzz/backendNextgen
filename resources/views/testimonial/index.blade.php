@@ -26,9 +26,9 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
             </span>
-            <form action="{{ route('testimonial.index') }}" method="GET" style="display: flex; gap: 12px; align-items: center; width: 100%;">
+            <form action="{{ route('testimonial.index') }}" method="GET" style="display: flex; gap: 12px; align-items: center; width: 100%;" x-data="{ search: '{{ $search ?? '' }}' }">
                 <input type="text" name="search" id="search-input" placeholder="Cari testimoni..."
-                    value="{{ $search ?? '' }}" style="flex: 1;">
+                    x-model="search" @input.debounce.500ms="$el.form.submit()" style="flex: 1;">
                 <select name="status" onchange="this.form.submit()"
                     style="height: 48px; padding: 10px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 14px; color: #464646; background: white; cursor: pointer; outline: none; min-width: 160px;">
                     <option value="">Semua Status</option>
@@ -138,6 +138,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($testimonials->hasPages())
+            <div style="padding:16px 24px;border-top:1px solid #F1F5F9;">
+                {{ $testimonials->withQueryString()->links() }}
+            </div>
+            @endif
         @else
             <div class="empty-state">
                 <div class="empty-icon" style="font-size: 48px; margin-bottom: 16px;">💬</div>
@@ -279,7 +285,6 @@
             document.getElementById('detail-rating-value').textContent = parseFloat(data.rating).toFixed(1) + ' / 5.0';
             document.getElementById('detail-user').textContent    = data.user_name;
             document.getElementById('detail-mentor').textContent  = data.mentor_name;
-            document.getElementById('detail-paket').textContent   = data.paket_name;
             document.getElementById('detail-content').textContent = data.content;
             document.getElementById('detail-date').textContent    = data.created_at;
 
