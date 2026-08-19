@@ -51,7 +51,6 @@
                             <th>Mentor</th>
                             <th>Rating</th>
                             <th>Status</th>
-                            <th>Show</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -87,19 +86,6 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div style="display: flex; gap: 8px; font-size: 12px;">
-                                        @if($testimonial->show_mobile)
-                                            <span style="background: #E7F9FF; color: #0369A1; padding: 2px 8px; border-radius: 12px;">📱 Mobile</span>
-                                        @endif
-                                        @if($testimonial->show_web)
-                                            <span style="background: #F0F0FF; color: #4338CA; padding: 2px 8px; border-radius: 12px;">🌐 Web</span>
-                                        @endif
-                                        @if(!$testimonial->show_mobile && !$testimonial->show_web)
-                                            <span style="color: #94A3B8;">—</span>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
                                     <div class="action-buttons">
                                         <button type="button" class="action-btn view" title="Lihat Detail"
                                             onclick="openDetailModal({{ json_encode([
@@ -110,8 +96,6 @@
                                                 'content' => $testimonial->content,
                                                 'rating' => $testimonial->rating,
                                                 'status' => $testimonial->status,
-                                                'show_mobile' => $testimonial->show_mobile,
-                                                'show_web' => $testimonial->show_web,
                                                 'created_at' => $testimonial->created_at ? $testimonial->created_at->format('d M Y H:i') : '-',
                                             ]) }})">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -120,8 +104,6 @@
                                             onclick="openEditModal({{ json_encode([
                                                 'id' => (string) $testimonial->_id,
                                                 'status' => $testimonial->status,
-                                                'show_mobile' => $testimonial->show_mobile ? true : false,
-                                                'show_web' => $testimonial->show_web ? true : false,
                                                 'content' => $testimonial->content,
                                                 'user_name' => optional($testimonial->user_data)->name ?? 'Anonymous',
                                             ]) }})">
@@ -182,14 +164,10 @@
                 <div id="detail-content" style="font-size: 15px; color: #334155; line-height: 1.7; font-style: italic;"></div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div style="background: #F8FAFC; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #E2E8F0;">
                     <div style="color: #64748B; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">Status</div>
                     <div id="detail-status" style="font-weight: 600;"></div>
-                </div>
-                <div style="background: #F8FAFC; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #E2E8F0;">
-                    <div style="color: #64748B; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">Tampil</div>
-                    <div id="detail-show" style="font-size: 13px;"></div>
                 </div>
                 <div style="background: #F8FAFC; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #E2E8F0;">
                     <div style="color: #64748B; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">Tanggal</div>
@@ -229,21 +207,7 @@
                     </div>
                 </div>
 
-                <div id="show-fields" style="display: none;">
-                    <div style="color: #64748B; font-size: 13px; font-weight: 600; text-transform: uppercase; margin-bottom: 12px;">Tampilkan di Platform</div>
-                    <div style="display: flex; gap: 24px; margin-bottom: 24px;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 400; padding: 12px 16px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; flex: 1;">
-                            <input type="checkbox" name="show_mobile" id="edit_show_mobile" value="1"
-                                style="width: 18px; height: 18px; accent-color: #2563EB;">
-                            <span>📱 Mobile</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 400; padding: 12px 16px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; flex: 1;">
-                            <input type="checkbox" name="show_web" id="edit_show_web" value="1"
-                                style="width: 18px; height: 18px; accent-color: #2563EB;">
-                            <span>🌐 Web</span>
-                        </label>
-                    </div>
-                </div>
+
 
                 <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
                     <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Batal</button>
@@ -297,11 +261,7 @@
             const s = statusMap[data.status] || statusMap['pending'];
             document.getElementById('detail-status').innerHTML = `<span style="background:${s.bg};color:${s.color};padding:2px 10px;border-radius:12px;font-size:12px;">${s.label}</span>`;
 
-            // Show platforms
-            let showParts = [];
-            if (data.show_mobile) showParts.push('📱 Mobile');
-            if (data.show_web) showParts.push('🌐 Web');
-            document.getElementById('detail-show').textContent = showParts.length > 0 ? showParts.join(', ') : '—';
+
 
             document.getElementById('detail-modal').classList.add('active');
         }
@@ -311,8 +271,6 @@
         function openEditModal(data) {
             document.getElementById('edit-form').action = '/testimonial/' + data.id;
             document.getElementById('edit_status').value = data.status;
-            document.getElementById('edit_show_mobile').checked = data.show_mobile;
-            document.getElementById('edit_show_web').checked = data.show_web;
             document.getElementById('edit-user-name').textContent = data.user_name;
             document.getElementById('edit-content-preview').textContent = data.content;
 
@@ -322,16 +280,8 @@
         function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
 
         function toggleShowFields(status) {
-            const showFields = document.getElementById('show-fields');
             const rejectedWarning = document.getElementById('rejected-warning');
-
-            if (status === 'is_approved') {
-                showFields.style.display = 'block';
-                rejectedWarning.style.display = 'none';
-            } else {
-                showFields.style.display = 'none';
-                rejectedWarning.style.display = status === 'rejected' ? 'block' : 'none';
-            }
+            rejectedWarning.style.display = status === 'rejected' ? 'block' : 'none';
         }
 
         // ── Delete Modal ────────────────────────────────────────────────

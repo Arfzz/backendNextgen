@@ -48,8 +48,6 @@ class TestimonialController extends Controller
 
         $validated = $request->validate([
             'status'      => 'required|in:pending,is_approved,rejected',
-            'show_mobile' => 'nullable|boolean',
-            'show_web'    => 'nullable|boolean',
         ]);
 
         // If status is rejected, delete the testimonial and recalculate mentor rating
@@ -61,9 +59,7 @@ class TestimonialController extends Controller
             return redirect()->route('testimonial.index')->with('success', 'Testimoni berhasil dihapus (rejected).');
         }
 
-        $testimonial->status      = $validated['status'];
-        $testimonial->show_mobile = $request->has('show_mobile') ? (bool) $request->show_mobile : false;
-        $testimonial->show_web    = $request->has('show_web') ? (bool) $request->show_web : false;
+        $testimonial->status = $validated['status'];
         $testimonial->save();
 
         // Recalculate mentor rating whenever testimonial is approved

@@ -20,13 +20,6 @@ class TestimonialController extends Controller
             $query->where('mentor_id', $request->mentor_id);
         }
 
-        if ($request->has('show_mobile') && $request->show_mobile) {
-            $query->where('show_mobile', true);
-        }
-
-        if ($request->has('show_web') && $request->show_web) {
-            $query->where('show_web', true);
-        }
 
         $testimonials = $query->orderBy('created_at', 'desc')->get();
 
